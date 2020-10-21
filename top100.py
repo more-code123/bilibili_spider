@@ -1,10 +1,11 @@
-import requests
 import json
-import re
-from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, wait
 import os
 import random
+import re
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, wait
+
+import requests
+from bs4 import BeautifulSoup
 
 
 def get_ua():
@@ -65,13 +66,24 @@ def down_video(video_url, audio_url, file_name, flag=5):  # flag重试5次
 
 def down_audio(url, file_name,flag=5):
     print("开始下载**{}**音频文件".format(file_name))
+    audio_header = {
+        'accept': '*/*',
+        'accept-encoding': 'identity',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'cache-control': 'no-cache',
+        'origin': 'https://www.bilibili.com',
+        'pragma': 'no-cache',
+        'range': 'bytes=0-',
+        'referer': 'https://www.bilibili.com/',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'cross-site',
+        'user-agent': get_ua(),
+    }
     try:
         file_name = file_name.strip()
         file_name = re.sub('[\\/:*?"<>|]','',file_name)
         path = "./video/"+file_name+"/audio.mp3"
-        audio_header = {
-            'user_agent': get_ua(),
-        }
         # url = "http://113-128-69-178.mcdn.bilivideo.cn:480/upgcxcode/50/96/247359650/247359650_nb2-1-30280.m4s?expires=1603170455&platform=pc&ssig=1tNgDB2G-tHe4T_IwaK8AA&oi=3683850758&trid=2f2bbe3e8c944480b532f7235c8da756u&nfc=1&nfb=maPYqpoel5MI3qOUX6YpRA==&mcdnid=1000979&mid=0&orderid=0"
         res = requests.get(url, headers=audio_header).content
         with open(path, "ab+")as f:
@@ -129,8 +141,6 @@ if __name__ == "__main__":
     # with ThreadPoolExecutor(max_workers=100)as t:  # 多线程爬取视频音频下载链接
     #     all_task = [t.submit(get_downUrl, names[i], urls[i])for i in range(len(names))]
     #     wait(all_task)
-    # for i in range(len(names)):  # 多线程写文件有问题
-    #     get_downUrl(names[i], urls[i])
 
     video_names, video_urls, audio_urls = [], [], []
     for name in video_names:
